@@ -1,8 +1,15 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-import User from "../models/user.model.js";
+import mongoose from "mongoose";
+import { User } from "../models/User.js";
 import jwt from "jsonwebtoken";
+
+const ensureAdmin = (req) => {
+  if (req.user?.role !== "admin") {
+    throw new ApiError(403, "Forbidden");
+  }
+};
 
 const generateAccessAndRefreshToken = async (userId) => {
   try {
@@ -212,6 +219,76 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, user, "Account details updated successfully"));
 });
+
+const getAllUsers = asyncHandler(async (req, res) => {
+  ensureAdmin(req);
+
+  const users = await User.find().select("-password -refreshToken");
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, users, "Users retrieved successfully"));
+});
+
+const updateUserRole = asyncHandler(async (req, res) => {
+  ensureAdmin(req);
+
+  const { userId } = req.params;
+  const { role } = req.body;
+
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    throw new ApiError(400, "Invalid user id");
+  }
+
+  const allowedRoles = ["viewer", "analyst", "admin"];
+  if (!role || !allowedRoles.includes(role)) {
+    throw new ApiError(400, "Role must be one of: viewer, analyst, admin");
+  }
+
+  const updatedUser = await User.findByIdAndUpdate(
+    userId,
+    { $set: { role } },
+    { new: true }
+  ).select("-password -refreshToken");
+
+  if (!updatedUser) {
+    throw new ApiError(404, "User not found");
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, updatedUser, "User role updated successfully"));
+});
+
+const updateUserStatus = asyncHandler(async (req, res) => {
+  ensureAdmin(req);
+
+  const { userId } = req.params;
+  const { status } = req.body;
+
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    throw new ApiError(400, "Invalid user id");
+  }
+
+  const allowedStatuses = ["active", "inactive"];
+  if (!status || !allowedStatuses.includes(status)) {
+    throw new ApiError(400, "Status must be either active or inactive");
+  }
+
+  const updatedUser = await User.findByIdAndUpdate(
+    userId,
+    { $set: { status } },
+    { new: true }
+  ).select("-password -refreshToken");
+
+  if (!updatedUser) {
+    throw new ApiError(404, "User not found");
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, updatedUser, "User status updated successfully"));
+});
 export {
   registerUser,
   loginUser,
@@ -220,4 +297,7 @@ export {
   changeCurrentPassword,
   getCurrentUser,
   updateAccountDetails,
+  getAllUsers,
+  updateUserRole,
+  updateUserStatus,
 };
