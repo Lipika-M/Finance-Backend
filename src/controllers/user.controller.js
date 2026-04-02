@@ -62,6 +62,9 @@ const loginUser = asyncHandler(async (req, res) => {
   if (!user) {
     throw new ApiError(404, "User not found");
   }
+  if (user.status !== "active") {
+    throw new ApiError(403, "Account inactive");
+  }
   const ispasswordvalid = await user.isPasswordCorrect(password);
   if (!ispasswordvalid) {
     throw new ApiError(401, "Invalid password");
