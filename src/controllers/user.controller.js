@@ -236,7 +236,7 @@ const getAllUsers = asyncHandler(async (req, res) => {
 const updateUserRole = asyncHandler(async (req, res) => {
   ensureAdmin(req);
 
-  const { userId } = req.params;
+  const userId = req.params.id;
   const { role } = req.body;
 
   if (!mongoose.Types.ObjectId.isValid(userId)) {
@@ -266,7 +266,7 @@ const updateUserRole = asyncHandler(async (req, res) => {
 const updateUserStatus = asyncHandler(async (req, res) => {
   ensureAdmin(req);
 
-  const { userId } = req.params;
+  const userId = req.params.id;
   const { status } = req.body;
 
   if (!mongoose.Types.ObjectId.isValid(userId)) {
