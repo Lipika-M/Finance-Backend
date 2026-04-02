@@ -1,0 +1,14 @@
+{
+  "name": "finance",
+  "version": "1.0.0",
+  "description": "Assessment Backend",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "Lipika Mandal",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}
