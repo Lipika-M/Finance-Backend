@@ -12,6 +12,8 @@ app.use(express.static("public"));
 app.use(cookieParser());
 //routes
 import userRoutes from "./routes/user.routes.js";
+import financialRecordRoutes from "./routes/financialRecord.routes.js";
 app.use("/api/v1/users", userRoutes);
+app.use("/api/v1/financial-records", financialRecordRoutes);
 
 export { app };
