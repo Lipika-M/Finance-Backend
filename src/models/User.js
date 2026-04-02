@@ -26,7 +26,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, "Password is required"],
       minlength: [6, "Password must be at least 6 characters long"],
-      select: false,  
+      select: false,
     },
     role: {
       type: String,
@@ -35,6 +35,9 @@ const userSchema = new mongoose.Schema(
         message: "Role must be either viewer, analyst, or admin",
       },
       default: "viewer",
+    },
+    refreshToken: {
+      type: String,
     },
     status: {
       type: String,
@@ -50,9 +53,14 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-userSchema.pre("save", async function () {
-  if (!this.isModified("password")) return;
-  this.password = await bcrypt.hash(this.password, 10);
+userSchema.pre("save", async function (next) {
+  try {
+    if (!this.isModified("password")) return next();
+    this.password = await bcrypt.hash(this.password, 10);
+    next();
+  } catch (err) {
+    next(err);
+  }
 });
 
 userSchema.methods.isPasswordCorrect = async function (password) {
@@ -60,24 +68,23 @@ userSchema.methods.isPasswordCorrect = async function (password) {
 };
 userSchema.methods.generateAccessToken = function () {
   return jwt.sign(
-    {_id: this._id,
-     email: this.email,
-     userName:this.userName,
-     fullName:this.fullName
-     },
-    process.env.ACCESS_TOKEN_SECRET,{
-        expiresIn:process.env.ACCESS_TOKEN_EXPIRY
-    })
-}
+    { _id: this._id, email: this.email, role: this.role },
+    process.env.ACCESS_TOKEN_SECRET,
+    {
+      expiresIn: process.env.ACCESS_TOKEN_EXPIRY,
+    }
+  );
+};
 userSchema.methods.generateRefreshToken = function () {
   return jwt.sign(
     {
-        _id: this._id,  
-     },
+      _id: this._id,
+    },
     process.env.REFRESH_TOKEN_SECRET,
     {
-        expiresIn: process.env.REFRESH_TOKEN_EXPIRY
-    })
-}
+      expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
+    }
+  );
+};
 
 export const User = mongoose.model("User", userSchema);
