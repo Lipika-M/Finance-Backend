@@ -16,6 +16,12 @@ This repository contains a backend API only. It provides:
 
 The codebase is structured so routes stay thin, controllers handle HTTP flow, services hold aggregation logic, and models define data constraints.
 
+## API Documentation
+
+Postman collection documentation:
+
+- [Finance Backend API Documentation](https://documenter.getpostman.com/view/41552921/2sBXionANb)
+
 ## Architecture
 
 The application follows a layered structure:
