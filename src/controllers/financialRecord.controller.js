@@ -1,18 +1,32 @@
 import mongoose from "mongoose";
 import FinancialRecord from "../models/financialRecord.model.js";
+import { User } from "../models/user.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 
 const createFinancialRecord = asyncHandler(async (req, res) => {
-  const { amount, type, category, date, notes } = req.body;
+  if (req.user?.role !== "admin") {
+    throw new ApiError(403, "Forbidden");
+  }
 
-  if (amount === undefined || !type || !category) {
-    throw new ApiError(400, "Amount, type, and category are required");
+  const { userId, amount, type, category, date, notes } = req.body;
+
+  if (!userId || amount === undefined || !type || !category) {
+    throw new ApiError(400, "User ID, amount, type, and category are required");
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    throw new ApiError(400, "Invalid user id");
+  }
+
+  const userExists = await User.findById(userId).select("_id");
+  if (!userExists) {
+    throw new ApiError(404, "User not found");
   }
 
   const record = await FinancialRecord.create({
-    userId: req.user?._id,
+    userId,
     amount,
     type,
     category,

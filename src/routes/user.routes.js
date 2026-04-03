@@ -8,8 +8,10 @@ import {
 	getCurrentUser,
 	updateAccountDetails,
 	getAllUsers,
+	getUserById,
 	updateUserRole,
 	updateUserStatus,
+	deleteUser,
 } from "../controllers/user.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 import { authorizeRoles } from "../middlewares/role.middleware.js";
@@ -40,5 +42,9 @@ router
 router
 	.route("/:id/status")
 	.patch(verifyJWT, authorizeRoles("admin"), updateUserStatus);
+router
+	.route("/:id")
+	.get(verifyJWT, authorizeRoles("admin"), getUserById)
+	.delete(verifyJWT, authorizeRoles("admin"), deleteUser);
 
 export default router;

@@ -1,6 +1,11 @@
 import { body } from "express-validator";
 
 const createFinancialRecordValidation = [
+  body("userId")
+    .notEmpty()
+    .withMessage("User ID is required")
+    .isMongoId()
+    .withMessage("User ID must be a valid MongoDB ObjectId"),
   body("amount")
     .notEmpty()
     .withMessage("Amount is required")

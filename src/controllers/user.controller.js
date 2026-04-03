@@ -233,6 +233,26 @@ const getAllUsers = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, users, "Users retrieved successfully"));
 });
 
+const getUserById = asyncHandler(async (req, res) => {
+  ensureAdmin(req);
+
+  const userId = req.params.id;
+
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    throw new ApiError(400, "Invalid user id");
+  }
+
+  const user = await User.findById(userId).select("-password -refreshToken");
+
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, user, "User retrieved successfully"));
+});
+
 const updateUserRole = asyncHandler(async (req, res) => {
   ensureAdmin(req);
 
@@ -292,6 +312,30 @@ const updateUserStatus = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, updatedUser, "User status updated successfully"));
 });
+
+const deleteUser = asyncHandler(async (req, res) => {
+  ensureAdmin(req);
+
+  const userId = req.params.id;
+
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    throw new ApiError(400, "Invalid user id");
+  }
+
+  const updatedUser = await User.findByIdAndUpdate(
+    userId,
+    { $set: { status: "inactive" } },
+    { new: true }
+  ).select("-password -refreshToken");
+
+  if (!updatedUser) {
+    throw new ApiError(404, "User not found");
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, updatedUser, "User deleted successfully"));
+});
 export {
   registerUser,
   loginUser,
@@ -301,6 +345,8 @@ export {
   getCurrentUser,
   updateAccountDetails,
   getAllUsers,
+  getUserById,
   updateUserRole,
   updateUserStatus,
+  deleteUser,
 };
