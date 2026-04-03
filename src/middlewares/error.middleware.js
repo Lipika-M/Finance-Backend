@@ -66,8 +66,8 @@ const errorHandler = (error, _req, res, _next) => {
   return res.status(statusCode).json(
     new ApiResponse(
       statusCode,
-      message,
-      details.length ? { errors: details } : null
+      details.length ? { errors: details } : null,
+      message
     )
   );
 };
