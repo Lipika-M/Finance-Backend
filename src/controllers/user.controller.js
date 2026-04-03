@@ -101,7 +101,7 @@ const logoutUser = asyncHandler(async (req, res) => {
   await User.findByIdAndUpdate(
     req.user._id,
     { $set: { refreshToken: undefined } },
-    { new: true }
+    { returnDocument: "after" }
   );
   const options = {
     httpOnly: true,
@@ -215,7 +215,7 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
   const user = await User.findByIdAndUpdate(
     req.user._id,
     { $set: updateFields },
-    { new: true }
+    { returnDocument: "after" }
   ).select("-password -refreshToken");
 
   return res
@@ -271,7 +271,7 @@ const updateUserRole = asyncHandler(async (req, res) => {
   const updatedUser = await User.findByIdAndUpdate(
     userId,
     { $set: { role } },
-    { new: true }
+    { returnDocument: "after" }
   ).select("-password -refreshToken");
 
   if (!updatedUser) {
@@ -301,7 +301,7 @@ const updateUserStatus = asyncHandler(async (req, res) => {
   const updatedUser = await User.findByIdAndUpdate(
     userId,
     { $set: { status } },
-    { new: true }
+    { returnDocument: "after" }
   ).select("-password -refreshToken");
 
   if (!updatedUser) {
@@ -325,7 +325,7 @@ const deleteUser = asyncHandler(async (req, res) => {
   const updatedUser = await User.findByIdAndUpdate(
     userId,
     { $set: { status: "inactive" } },
-    { new: true }
+    { returnDocument: "after" }
   ).select("-password -refreshToken");
 
   if (!updatedUser) {

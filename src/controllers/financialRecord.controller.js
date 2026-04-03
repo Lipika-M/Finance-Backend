@@ -125,7 +125,7 @@ const getFinancialRecords = asyncHandler(async (req, res) => {
     }
   }
 
-  const allowedSortFields = ["date", "amount", "category", "type", "createdAt", "updatedAt"];
+  const allowedSortFields = ["date", "amount", "category"];
   if (!allowedSortFields.includes(sortBy)) {
     throw new ApiError(400, "Invalid sortBy field");
   }
@@ -213,7 +213,7 @@ const updateFinancialRecord = asyncHandler(async (req, res) => {
   const updatedRecord = await FinancialRecord.findOneAndUpdate(
     { _id: id, isDeleted: false },
     { $set: updateFields },
-    { new: true, runValidators: true }
+    { returnDocument: "after", runValidators: true }
   );
 
   if (!updatedRecord) {
@@ -235,7 +235,7 @@ const deleteFinancialRecord = asyncHandler(async (req, res) => {
   const deletedRecord = await FinancialRecord.findOneAndUpdate(
     { _id: id, isDeleted: false },
     { $set: { isDeleted: true } },
-    { new: true }
+    { returnDocument: "after" }
   );
 
   if (!deletedRecord) {

@@ -12,6 +12,7 @@ import { validateRequest } from "../middlewares/validateRequest.js";
 import {
   createFinancialRecordValidation,
   updateFinancialRecordValidation,
+  getFinancialRecordsQueryValidation,
 } from "../validators/financialRecord.validators.js";
 
 const router = Router();
@@ -25,7 +26,13 @@ router
     validateRequest,
     createFinancialRecord
   )
-  .get(verifyJWT, authorizeRoles("admin", "analyst"), getFinancialRecords);
+  .get(
+    verifyJWT,
+    authorizeRoles("admin", "analyst"),
+    getFinancialRecordsQueryValidation,
+    validateRequest,
+    getFinancialRecords
+  );
 
 router
   .route("/:id")

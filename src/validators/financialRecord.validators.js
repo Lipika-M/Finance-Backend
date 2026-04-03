@@ -1,4 +1,4 @@
-import { body } from "express-validator";
+import { body, query } from "express-validator";
 
 const createFinancialRecordValidation = [
   body("userId")
@@ -66,7 +66,47 @@ const updateFinancialRecordValidation = [
     .withMessage("Notes cannot exceed 500 characters"),
 ];
 
+const getFinancialRecordsQueryValidation = [
+  query("page")
+    .optional()
+    .isInt({ min: 1 })
+    .withMessage("page must be a positive integer"),
+  query("limit")
+    .optional()
+    .isInt({ min: 1 })
+    .withMessage("limit must be a positive integer"),
+  query("sortBy")
+    .optional()
+    .isIn(["date", "amount", "category"])
+    .withMessage("sortBy must be one of: date, amount, category"),
+  query("order")
+    .optional()
+    .isIn(["asc", "desc"])
+    .withMessage("order must be either asc or desc"),
+  query("type")
+    .optional()
+    .isIn(["income", "expense"])
+    .withMessage("type must be either income or expense"),
+  query("minAmount")
+    .optional()
+    .isFloat()
+    .withMessage("minAmount must be a number"),
+  query("maxAmount")
+    .optional()
+    .isFloat()
+    .withMessage("maxAmount must be a number"),
+  query("startDate")
+    .optional()
+    .isISO8601()
+    .withMessage("startDate must be a valid date"),
+  query("endDate")
+    .optional()
+    .isISO8601()
+    .withMessage("endDate must be a valid date"),
+];
+
 export {
   createFinancialRecordValidation,
   updateFinancialRecordValidation,
+  getFinancialRecordsQueryValidation,
 };

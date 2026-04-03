@@ -1,118 +1,48 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import {
-  getTotalIncome as getDashboardTotalIncome,
-  getTotalExpenses as getDashboardTotalExpenses,
-  getCategoryTotals as getDashboardCategoryTotals,
-  getRecentTransactions as getDashboardRecentTransactions,
-  getMonthlyTrends as getDashboardMonthlyTrends,
+  getDashboardSummaryData,
 } from "../services/dashboard.service.js";
 
-const getTotalIncome = asyncHandler(async (req, res) => {
-  const userId = req.user._id;
-  const totalIncome = await getDashboardTotalIncome(userId);
+const getDateRangeFromQuery = (query) => {
+  const { startDate, endDate } = query;
 
-  return res
-    .status(200)
-    .json(
-      new ApiResponse(
-        200,
-        { totalIncome },
-        "Total income retrieved successfully"
-      )
-    );
-});
+  if (startDate) {
+    const parsedStartDate = new Date(startDate);
+    if (Number.isNaN(parsedStartDate.getTime())) {
+      throw new ApiError(400, "Invalid startDate");
+    }
+  }
 
-const getTotalExpenses = asyncHandler(async (req, res) => {
-  const userId = req.user._id;
-  const totalExpenses = await getDashboardTotalExpenses(userId);
+  if (endDate) {
+    const parsedEndDate = new Date(endDate);
+    if (Number.isNaN(parsedEndDate.getTime())) {
+      throw new ApiError(400, "Invalid endDate");
+    }
+  }
 
-  return res
-    .status(200)
-    .json(
-      new ApiResponse(
-        200,
-        { totalExpenses },
-        "Total expenses retrieved successfully"
-      )
-    );
-});
-
-const getNetBalance = asyncHandler(async (req, res) => {
-  const userId = req.user._id;
-  const [totalIncome, totalExpenses] = await Promise.all([
-    getDashboardTotalIncome(userId),
-    getDashboardTotalExpenses(userId),
-  ]);
-  const safeTotalIncome = totalIncome ?? 0;
-  const safeTotalExpenses = totalExpenses ?? 0;
-  const netBalance = safeTotalIncome - safeTotalExpenses;
-
-  return res.status(200).json(
-    new ApiResponse(
-      200,
-      {
-        totalIncome: safeTotalIncome,
-        totalExpenses: safeTotalExpenses,
-        netBalance,
-      },
-      "Net balance retrieved successfully"
-    )
-  );
-});
-
-const getCategoryWiseTotals = asyncHandler(async (req, res) => {
-  const userId = req.user._id;
-  const categoryTotals = await getDashboardCategoryTotals(userId);
-
-  return res
-    .status(200)
-    .json(
-      new ApiResponse(200, { categoryTotals }, "Category-wise totals retrieved successfully")
-    );
-});
-
-const getRecentTransactions = asyncHandler(async (req, res) => {
-  const userId = req.user._id;
-  const recentTransactions = await getDashboardRecentTransactions(userId);
-
-  return res
-    .status(200)
-    .json(
-      new ApiResponse(200, { recentTransactions }, "Recent transactions retrieved successfully")
-    );
-});
-
-const getMonthlyTrends = asyncHandler(async (req, res) => {
-  const userId = req.user._id;
-  const monthlyTrends = await getDashboardMonthlyTrends(userId);
-
-  return res
-    .status(200)
-    .json(new ApiResponse(200, { monthlyTrends }, "Monthly trends retrieved successfully"));
-});
+  return { startDate, endDate };
+};
 
 const getDashboardSummary = asyncHandler(async (req, res) => {
   const userId = req.user._id;
-  const [totalIncome, totalExpenses, categoryTotals, recentTransactions, monthlyTrends] =
-    await Promise.all([
-      getDashboardTotalIncome(userId),
-      getDashboardTotalExpenses(userId),
-      getDashboardCategoryTotals(userId),
-      getDashboardRecentTransactions(userId),
-      getDashboardMonthlyTrends(userId),
-    ]);
-
-  const safeTotalIncome = totalIncome ?? 0;
-  const safeTotalExpenses = totalExpenses ?? 0;
-  const netBalance = safeTotalIncome - safeTotalExpenses;
+  const { startDate, endDate } = getDateRangeFromQuery(req.query);
+  const {
+    totalIncome,
+    totalExpenses,
+    netBalance,
+    categoryTotals,
+    recentTransactions,
+    monthlyTrends,
+  } = await getDashboardSummaryData(userId, startDate, endDate);
 
   return res.status(200).json(
     new ApiResponse(
       200,
       {
-        totalIncome: safeTotalIncome,
-        totalExpenses: safeTotalExpenses,
+        totalIncome,
+        totalExpenses,
         netBalance,
         categoryTotals,
         recentTransactions,
@@ -124,11 +54,5 @@ const getDashboardSummary = asyncHandler(async (req, res) => {
 });
 
 export {
-  getTotalIncome,
-  getTotalExpenses,
-  getNetBalance,
-  getCategoryWiseTotals,
-  getRecentTransactions,
-  getMonthlyTrends,
   getDashboardSummary,
 };
