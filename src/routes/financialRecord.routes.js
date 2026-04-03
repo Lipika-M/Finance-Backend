@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   createFinancialRecord,
   getFinancialRecords,
+  getFinancialRecordById,
   updateFinancialRecord,
   deleteFinancialRecord,
 } from "../controllers/financialRecord.controller.js";
@@ -28,6 +29,7 @@ router
 
 router
   .route("/:id")
+  .get(verifyJWT, getFinancialRecordById)
   .patch(
     verifyJWT,
     authorizeRoles("admin"),
