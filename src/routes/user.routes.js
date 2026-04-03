@@ -13,12 +13,17 @@ import {
 } from "../controllers/user.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 import { authorizeRoles } from "../middlewares/role.middleware.js";
+import { validateRequest } from "../middlewares/validateRequest.js";
+import {
+	registerUserValidation,
+	loginUserValidation,
+} from "../validators/user.validators.js";
 
 const router = Router();
 
 // Public routes
-router.route("/register").post(registerUser);
-router.route("/login").post(loginUser);
+router.route("/register").post(registerUserValidation, validateRequest, registerUser);
+router.route("/login").post(loginUserValidation, validateRequest, loginUser);
 
 // Protected routes
 router.route("/logout").post(verifyJWT, logoutUser);
